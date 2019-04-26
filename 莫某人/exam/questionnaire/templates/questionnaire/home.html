@@ -1,0 +1,61 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>卡特尔十六种人格因素测验</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-3.3.7/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/signin.css' %}">
+  </head>
+  <body>
+    <div class="container">
+      <form class="form-signin" method="POST">
+      <h2 class="form-signin-heading">卡特尔十六种人格因素测验</h2>
+        {% csrf_token %}
+        {% for item in item_list %}
+            <h6 class="form-signin-heading">{{ item.item_title }}</h6>
+            <div class="checkbox">
+              <label>
+                <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="A" checked="checked"> {{ item.item_a_anwser }}
+              </label>
+              <label>
+                <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="B"> {{ item.item_b_anwser }}
+              </label>
+              <label>
+                <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="C"> {{ item.item_c_anwser }}
+              </label>
+            </div>
+        {% endfor %}
+        <label id="incomplete">请完成所有题目</label>
+        <button id="completed" class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+      </form>
+    </div>
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script type="text/javascript">
+        (function addResponse() {
+            // 隐藏提交按钮
+            $("#completed").hide();
+            $("#incomplete").show();
+            // 往每个单选项添加检测是否全部答完功能
+            var classList = document.getElementsByClassName("radio_btn");
+            for (var i = 0; i < classList.length; i++) {
+                classList[i].addEventListener("click", function() {
+                    var completedQuantity = 0;
+                    var btnList = document.getElementsByClassName("radio_btn");
+                    for (var j = 0; j < btnList.length; j++) {
+                        if (btnList[j].checked) {
+                            completedQuantity += 1;
+                            if (completedQuantity >= 187) {
+                                $("#completed").show();
+                                $("#incomplete").hide();
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+  </body>
+</html>

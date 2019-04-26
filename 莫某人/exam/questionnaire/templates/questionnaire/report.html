@@ -1,0 +1,157 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>卡特尔十六种人格因素测验报告</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-3.3.7/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/signin.css' %}">
+    <script type="text/javascript" src="{% static 'js/highcharts.js' %}"></script>
+  </head>
+  <body>
+    <div id="container_1" style="height: 400px"></div>
+    <div class="container">
+      <form class="form-signin" action="{% url 'home' %}" method="GET">
+        <h2 class="form-signin-heading">以下是卡特尔十六种人格因素测验报告</h2>
+        <br>
+        {% for item in result %}
+          <h4>{{ item }}</h4>
+          {% if forloop.counter == 16 %}
+            <div id="container_2" style="height: 400px"></div>
+          {% endif %}
+          {% if forloop.counter == 20 %}
+            <div id="container_3" style="height: 400px"></div>
+          {% endif %}
+        {% endfor %}
+        <button id="completed" class="btn btn-lg btn-primary btn-block" type="submit">返回测试页面</button>
+      </form>
+    </div>
+  <script type="text/javascript">
+    var chart_1 = Highcharts.chart('container_1', {
+      chart: {
+        type: 'pie',
+        options3d: {
+          enabled: true,
+          alpha: 45,
+          beta: 0
+        }
+      },
+      title: {
+        text: '十六种人格因素测试占比'
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          depth: 35,
+          dataLabels: {
+            enabled: true,
+            format: '{point.name}'
+          }
+        }
+      },
+      credits: {
+        enabled: false,
+      },
+      series: [{
+        type: 'pie',
+        name: '十六种人格因素测试占比',
+        data: [
+          {% for key,value in standard_score.items %}
+            {% if key != '适应与焦虑型' and key != '内向与外向型' and key != '感情用事与安详机警型' and key != '怯懦与果断型' and key != '心理健康因素' and key != '专业与成就者的人格因素' and key != '创造力强者的人格因素' and key != '在新环境中有成长能力的人格因素'%}
+              ['{{ key }}', {{ value }}],
+            {% endif %}
+          {% endfor %}
+          ],
+      }]
+    });
+    var chart_2 = Highcharts.chart('container_2', {
+      chart: {
+        type: 'pie',
+        options3d: {
+          enabled: true,
+          alpha: 45,
+          beta: 0
+        }
+      },
+      title: {
+        text: '十六种人格因素测试占比'
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          depth: 35,
+          dataLabels: {
+            enabled: true,
+            format: '{point.name}'
+          }
+        }
+      },
+      credits: {
+        enabled: false,
+      },
+      series: [{
+        type: 'pie',
+        name: '十六种人格因素测试占比',
+        data: [
+          {% for key,value in standard_score.items %}
+            {% if key == '适应与焦虑型' or key == '内向与外向型' or key == '感情用事与安详机警型' or key == '怯懦与果断型'%}
+              ['{{ key }}', {{ value }}],
+            {% endif %}
+          {% endfor %}
+          ],
+      }]
+    });
+    var chart_3 = Highcharts.chart('container_3', {
+      chart: {
+        type: 'pie',
+        options3d: {
+          enabled: true,
+          alpha: 45,
+          beta: 0
+        }
+      },
+      title: {
+        text: '十六种人格因素测试占比'
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          depth: 35,
+          dataLabels: {
+            enabled: true,
+            format: '{point.name}'
+          }
+        }
+      },
+      credits: {
+        enabled: false,
+      },
+      series: [{
+        type: 'pie',
+        name: '十六种人格因素测试占比',
+        data: [
+          {% for key,value in standard_score.items %}
+            {% if key == '心理健康因素' or key == '专业与成就者的人格因素' or key == '创造力强者的人格因素' or key == '在新环境中有成长能力的人格因素'%}
+              ['{{ key }}', {{ value }}],
+            {% endif %}
+          {% endfor %}
+          ],
+      }]
+    });
+  </script>
+  </body>
+</html>
