@@ -11,14 +11,17 @@
   </head>
   <body>
     <div class="container">
-      <form class="form-signin" method="POST">
+      {% if page_of_item.has_next %}
+        <form id="comment_form" class="form-signin" method="GET" action="{% url 'home' %}">
+      {% else %}
+        <form id="comment_form" class="form-signin" method="POST" action="{% url 'home' %}">
+      {% endif %}
       <h2 class="form-signin-heading">卡特尔十六种人格因素测验</h2>
-        {% csrf_token %}
         {% for item in item_list %}
             <h6 class="form-signin-heading">{{ item.item_title }}</h6>
             <div class="checkbox">
               <label>
-                <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="A" checked="checked"> {{ item.item_a_anwser }}
+                <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="A"> {{ item.item_a_anwser }}
               </label>
               <label>
                 <input class="radio_btn" type="radio" name="{{ item.item_num }}" value="B"> {{ item.item_b_anwser }}
@@ -28,12 +31,102 @@
               </label>
             </div>
         {% endfor %}
+        {% if page_of_item.has_next %}
+          <input type="text" name="page" value="{{ page_of_item.next_page_number }}" hidden="true">
+        {% endif %}
         <label id="incomplete">请完成所有题目</label>
-        <button id="completed" class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+        {% if page_of_item.has_next %}
+          <button id="completed" class="btn btn-lg btn-primary btn-block" hidden="true">下一页</button>
+        {% else %}
+          {% csrf_token %}
+          <button id="completed" class="btn btn-lg btn-primary btn-block" >完成</button>
+        {% endif %}
+        <div class="container">
+          <ul class="pagination">
+              {# 上一页 #}
+              <li>
+                  {% if page_of_item.has_previous %}
+                      <a aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                      </a>
+                  {% else %}
+                      <span aria-hidden="true">&laquo;</span>
+                  {% endif %}
+              </li>
+              {# 全部页码 #}
+              {% for page_num in page_range %}
+                  {% if page_num == page_of_item.number %}
+                      <li class="active"><span>{{ page_num }}</span></li>
+                  {% else %}
+                      {% if page_num == '...' %}
+                          <li><span>{{ page_num }}</span></li>
+                      {% else %}
+                          <li><a>{{ page_num }}</a></li>
+                      {% endif %}
+                  {% endif %}
+              {% endfor %}
+              {# 下一页 #}
+              <li>
+                  {% if page_of_item.has_next %}
+                      <a  aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                      </a>
+                  {% else %}
+                      <span aria-hidden="true">&raquo;</span>
+                  {% endif %}
+              </li>
+          </ul>
+        </div>
       </form>
     </div>
     <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
     <script type="text/javascript">
+      (function addResponse() {
+          // 隐藏提交按钮
+          $("#completed").hide();
+          // $("#completed").show();
+          $("#incomplete").show();
+          // 往每个单选项添加检测是否全部答完功能
+          var classList = document.getElementsByClassName("radio_btn");
+          for (var i = 0; i < classList.length; i++) {
+              classList[i].addEventListener("click", function() {
+                  {% if page_of_item.has_next %}
+                  var completedQuantity = 0;
+                  {% else %}
+                  var completedQuantity = 3;
+                  {% endif %}
+                  var btnList = document.getElementsByClassName("radio_btn");
+                  for (var j = 0; j < btnList.length; j++) {
+                      if (btnList[j].checked) {
+                          completedQuantity += 1;
+                          if (completedQuantity >= 5) {
+                              $("#completed").show();
+                              $("#incomplete").hide();
+                          }
+                      }
+                  }
+              });
+          }
+      })();
+      // var data_dic = new Array();  // 定义一个字典
+      // $("#comment_form").submit(function(){
+      //   event.preventDefault();
+      //   $.ajax({
+      //     url: "",
+      //     type: 'GET',
+      //     data: $(this).serialize(),
+      //     cache: false,
+      //     success: function(data){
+      //       content_html = "";
+      //       console.log(data);
+      //     },
+      //     error: function(xhr){
+      //         console.log(xhr);
+      //     }
+      //   });
+      // });
+    </script>
+<!--     <script type="text/javascript">
         (function addResponse() {
             // 隐藏提交按钮
             $("#completed").hide();
@@ -56,6 +149,6 @@
                 });
             }
         })();
-    </script>
+    </script> -->
   </body>
 </html>

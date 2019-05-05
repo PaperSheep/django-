@@ -1,5 +1,9 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from questionnaire.models import ItemBank
+
+# from django.core import serializers
+from django.http import JsonResponse
 
 
 # 总分值转标准分
@@ -45,20 +49,24 @@ def home(request):
     if request.method == 'POST':
         # print(request.POST)
         total_score_dic = {}
-        for key in request.POST.keys():
+        anwser_dic = eval(request.COOKIES.get('anwser_dic'))
+        anwser_dic['186'] = request.POST['186']
+        anwser_dic['187'] = request.POST['187']
+        # for key in request.POST.keys():
+        for key in anwser_dic:
             if key == 'csrfmiddlewaretoken':
                 continue
             else:
                 item_object = ItemBank.objects.get(item_num=int(key))
                 if total_score_dic.get(item_object.item_type):
-                    if request.POST[key][0] == item_object.one_score_anwser:
+                    if anwser_dic[key] == item_object.one_score_anwser:
                         total_score_dic[item_object.item_type] += 1
-                    elif request.POST[key][0] == item_object.tow_score_anwser:
+                    elif anwser_dic[key] == item_object.tow_score_anwser:
                         total_score_dic[item_object.item_type] += 2
                 else:
-                    if request.POST[key][0] == item_object.one_score_anwser:
+                    if anwser_dic[key] == item_object.one_score_anwser:
                         total_score_dic[item_object.item_type] = 1
-                    elif request.POST[key][0] == item_object.tow_score_anwser:
+                    elif anwser_dic[key] == item_object.tow_score_anwser:
                         total_score_dic[item_object.item_type] = 2
         standard_score = {}
         change_standard('乐群性', total_score_dic, standard_score, [2, 4, 6, 7, 9, 12, 14, 15, 17])
@@ -138,11 +146,46 @@ def home(request):
         return render(request, 'questionnaire/report.html', context)
 
 
-
     item_list = ItemBank.objects.all()
+    paginator = Paginator(item_list, 5)  # 每5篇进行分页
+    page_num = request.GET.get('page', 1)  # 获取url的页面参数 （GET请求）
+    page_of_item = paginator.get_page(page_num)
+    current_page_num = page_of_item.number  # 获取当前页码
+    # 获取当前页前后页码
+    page_range = list(range(max(current_page_num - 2, 1), current_page_num)) + \
+                 list(range(current_page_num, min(current_page_num + 2, paginator.num_pages) + 1))
+    # 加上省略页码标记
+    if page_range[0] - 1 >= 2:
+        page_range.insert(0, '...')
+    if paginator.num_pages - page_range[-1] >= 2:
+        page_range.append('...')
+    # 加上第一页和最后一页
+    if page_range[0] != 1:
+        page_range.insert(0, 1)
+    if page_range[-1] != paginator.num_pages:
+        page_range.append(paginator.num_pages)
 
     context = {}
-    context['item_list'] = item_list
-    return render(request, 'questionnaire/home.html', context)
+    context['item_list'] = page_of_item.object_list
+    context['page_of_item'] = page_of_item
+    context['page_range'] = page_range
 
+    response =  render(request, 'questionnaire/home.html', context)
+    if page_num != 1:
+        dic = dict()
+        low = 5 * int(page_num) - 9
+        high = 5 * (int(page_num) - 1) + 1
+        for i in range(low, high):
+            dic[str(i)] = request.GET[str(i)]
+        if request.COOKIES.get('anwser_dic') != None:
+        # print(type(request.COOKIES.get('anwser_dic')))
+            dic.update(eval(request.COOKIES.get('anwser_dic')))
+        # print(request.COOKIES)
+        response.set_cookie('anwser_dic', dic)
+    else:
+        response.set_cookie('anwser_dic', {})
+    # print(request.COOKIES)
+    return response
 
+def comment(request):
+    return JsonResponse(request.GET)

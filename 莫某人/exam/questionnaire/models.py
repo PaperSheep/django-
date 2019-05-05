@@ -11,3 +11,6 @@ class ItemBank(models.Model):
     one_score_anwser = models.CharField(max_length=50, null=True)
     tow_score_anwser = models.CharField(max_length=50, null=True)
 
+    class Meta:
+        ordering = ['item_num']
+
